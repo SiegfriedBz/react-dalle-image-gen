@@ -1,25 +1,43 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState, useEffect } from "react"
+import { Configuration, OpenAIApi } from "openai"
+import Navbar from "./components/Navbar"
+import Form from "./components/Form"
+import Image from "./components/Image"
+
+const OPENAI_KEY = process.env.REACT_APP_OPENAI_KEY
 
 function App() {
+  const [image, setImage] = useState("")
+
+  const configuration = new Configuration({
+    apiKey: OPENAI_KEY,
+  })
+
+  const openai = new OpenAIApi(configuration)
+
+  const onSubmit = async (dream) => {
+    try {
+      const response = await openai.createImage({
+        prompt: dream,
+        n: 1,
+        size: "1024x1024",
+      })
+      const image = response.data.data[0].url
+      setImage(image)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <Navbar />
+      <div className='container'>
+        <Form setImage={setImage} onSubmit={onSubmit} />
+        {image && <Image image={image} />}
+      </div>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
